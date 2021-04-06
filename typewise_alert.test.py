@@ -50,7 +50,7 @@ class TypewiseTest(unittest.TestCase):
         for test_alert_mechanism in test_alert_mechanisms:
             count_cooling_types = len(test_limits_for_cooling_types[index])
             cooling_type = list(test_limits_for_cooling_types[index].keys())[random.randint(0, count_cooling_types - 1)]
-            limit = test_limits_for_cooling_types[cooling_type][index % 2]
+            limit = test_limits_for_cooling_types[index][cooling_type][index % 2]
             temp = [limit - 10 if index == 0 else limit + 10][0]
             expected_alert_dest = test_alert_mechanisms[test_alert_mechanism]
             expected_alert_type = test_alerts[index]

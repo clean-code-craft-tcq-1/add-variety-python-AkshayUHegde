@@ -5,7 +5,8 @@ class TypewiseAlert:
         self.default_alert_funcs = \
             {
                 'TO_CONTROLLER': self.send_controller_message,
-                'TO_EMAIL': self.send_email
+                'TO_EMAIL': self.send_email,
+                'TO_CONSOLE': self.send_to_console
             }
         self.default_limits_for_cooling_types = {
             "PASSIVE_COOLING": (0, 35),
@@ -14,14 +15,18 @@ class TypewiseAlert:
         }
         self.default_alert_mail_details = {
             "TOO_LOW": {
-                "recipients": ["low_temperature_breach_expert@bosch.com"],
+                "recipient": "low_temperature_breach_expert@bosch.com",
                 "email_message": "The temperature has dropped beyond lower breach limits. "
                                  "Please take corrective action immediately."
             },
             "TOO_HIGH": {
-                "recipients": ["high_temperature_breach_expert@bosch.com"],
+                "recipient": "high_temperature_breach_expert@bosch.com",
                 "email_message": "The temperature has dropped beyond upper breach limits. "
                                  "Please take corrective action immediately."
+            },
+            "NORMAL": {
+                "recipient": "monitoring_team@bosch.com",
+                "email_message": "The temperature is OK."
             },
         }
         self.default_controller_header = 0xfeed
@@ -46,12 +51,18 @@ class TypewiseAlert:
 
     def send_controller_message(self, breach_type):
         print(f'{self.default_controller_header}, {breach_type}')
+        return f"CONTROLLER_MESSAGE,{breach_type}"
+
+    def send_to_console(self, breach_type):
+        print(breach_type)
+        return f"CONSOLE_MESSAGE,{breach_type}"
 
     def send_email(self, breach_type):
-        recipients = self.alert_mail_details[breach_type]['recipients']
+        recipients = self.alert_mail_details[breach_type]['recipient']
         email_message = self.alert_mail_details[breach_type]['email_message']
-        email_content = f"To,\n{recipients}\n\n\n \t {email_message}"
+        email_content = f"To,\n{recipients}\n \t{email_message}"
         print(email_content)
+        return f"EMAIL,{breach_type}"
 
     def infer_breach(self, value, lower_limit, upper_limit):
         if value < lower_limit:
@@ -64,7 +75,7 @@ class TypewiseAlert:
         lower_limit, upper_limit = self.limits_for_types[cooling_type]
         return self.infer_breach(temperature_in_c, lower_limit, upper_limit)
 
-    def check_and_alert(self, alert_target, battery_char, temperature_in_c):
+    def check_and_alert(self, alert_target, battery_characteristic, temperature_in_c):
         breach_type = \
-            self.classify_temperature_breach(battery_char['coolingType'], temperature_in_c)
-        self.alert_target_funcs[alert_target](breach_type)
+            self.classify_temperature_breach(battery_characteristic['coolingType'], temperature_in_c)
+        return self.alert_target_funcs[alert_target](breach_type)

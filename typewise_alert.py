@@ -1,19 +1,17 @@
 
 class TypewiseAlert:
-    def __init__(self, limits_for_types=None, alert_mail_details=None, alert_target_funcs=None):
+    def __init__(self, limits_for_types=None, alert_target_funcs=None):
         # Default values can be moved out of code to DB as required
-        self.default_alert_funcs = \
-            {
-                'TO_CONTROLLER': self.send_controller_message,
-                'TO_EMAIL': self.send_email,
-                'TO_CONSOLE': self.send_to_console
-            }
         self.default_limits_for_cooling_types = {
             "PASSIVE_COOLING": (0, 35),
             "MED_ACTIVE_COOLING": (0, 40),
             "HI_ACTIVE_COOLING": (0, 45),
         }
-        self.default_alert_mail_details = {
+        self.default_alert_funcs = {
+                'TO_CONTROLLER': self.send_controller_message,
+                'TO_EMAIL': self.send_email
+            }
+        self.alert_mail_details = {
             "TOO_LOW": {
                 "recipient": "low_temperature_breach_expert@bosch.com",
                 "email_message": "The temperature has dropped beyond lower breach limits. "
@@ -30,32 +28,14 @@ class TypewiseAlert:
             },
         }
         self.default_controller_header = 0xfeed
-        self.limits_for_types = self.set_limits_for_types(limits_for_types)
-        self.alert_mail_details = self.set_alert_mail_details(alert_mail_details)
-        self.alert_target_funcs = self.set_alert_target_funcs(alert_target_funcs)
-
-    def set_limits_for_types(self, limits_for_types):
-        if limits_for_types is not None:
-            return limits_for_types
-        return self.default_limits_for_cooling_types
-
-    def set_alert_mail_details(self, alert_mail_details):
-        if alert_mail_details is not None:
-            return alert_mail_details
-        return self.default_alert_mail_details
-
-    def set_alert_target_funcs(self, alert_target_funcs):
-        if alert_target_funcs is not None:
-            return alert_target_funcs
-        return self.default_alert_funcs
+        self.limits_for_types = [limits_for_types if limits_for_types is not None
+                                 else self.default_limits_for_cooling_types][0]
+        self.alert_target_funcs = [alert_target_funcs if alert_target_funcs is not None
+                                   else self.default_alert_funcs][0]
 
     def send_controller_message(self, breach_type):
         print(f'{self.default_controller_header}, {breach_type}')
         return f"CONTROLLER_MESSAGE,{breach_type}"
-
-    def send_to_console(self, breach_type):
-        print(breach_type)
-        return f"CONSOLE_MESSAGE,{breach_type}"
 
     def send_email(self, breach_type):
         recipients = self.alert_mail_details[breach_type]['recipient']

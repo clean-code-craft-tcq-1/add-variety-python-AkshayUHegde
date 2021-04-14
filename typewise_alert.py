@@ -1,7 +1,6 @@
 
 class TypewiseAlert:
     def __init__(self, limits_for_types=None, alert_target_funcs=None):
-        # Default values can be moved out of code to DB as required
         self.default_limits_for_cooling_types = {
             "PASSIVE_COOLING": (0, 35),
             "MED_ACTIVE_COOLING": (0, 40),
